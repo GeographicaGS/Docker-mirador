@@ -1,0 +1,57 @@
+#!/bin/bash
+#
+# chkconfig: 2345 85 15
+# description: Starts and stops the PostgreSQL 9.1.1 database server
+# modified by alberto asuero to add libraries to libary_path
+
+
+# PostgreSQL Service script for Linux
+
+start()
+{
+    echo $"Starting PostgreSQL 9.1.2: "
+    su postgres -c "pg_ctl -w start -D \"/var/pgsql/data\" -l \"/var/log/postgresql-9.1.2/startup.log\""
+
+    if [ $? -eq 0 ];
+    then
+        echo "PostgreSQL 9.1.2 started successfully"
+                   exit 0
+    else           
+        echo "PostgreSQL 9.1.2 did not start in a timely fashion, please see /var/log/postgresql-9.1.2/startup.log for details"
+                   exit 1
+    fi             
+}   
+
+stop()
+{
+    echo $"Stopping PostgreSQL 9.1: "
+    su postgres -c "pg_ctl stop -m fast -w -D \"/var/pgsql/data\""
+}   
+
+# See how we were called.
+case "$1" in 
+  start)
+          start
+          ;;
+  stop)   
+          stop
+          ;;
+  restart|reload)
+          stop
+          sleep 3
+          start 
+          ;;
+  condrestart)
+          if [ -f "/var/pgsql/data/postmaster.pid" ]; then
+               stop
+               sleep 3
+               start 
+          fi   
+          ;;   
+  status) 
+          su postgres -c "pg_ctl status -D \"/var/pgsql/data\""
+          ;; 
+  *)      
+          echo $"Usage: postgresql-9.1.2  {start|stop|restart|condrestart|status}"
+          exit 1
+esac
